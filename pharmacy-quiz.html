@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pharma Quiz - اختبار الصيدلية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00c896;
+    --green-dark: #009e77;
+    --blue: #0a2540;
+    --blue-mid: #163966;
+    --gold: #f5c842;
+    --red: #ff4d6d;
+    --bg: #07192e;
+    --card: #0d2137;
+    --card2: #112944;
+    --text: #e8f4ff;
+    --sub: #7ba8c9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(0,200,150,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(10,37,64,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(11,41,68,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; align-items: center; flex: 1; }
+  .screen.active { display: flex; }
+
+  /* ====== HOME SCREEN ====== */
+  .logo-area {
+    margin-top: 32px;
+    text-align: center;
+    animation: fadeDown 0.7s ease;
+  }
+
+  .pill-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 42px;
+    box-shadow: 0 0 40px rgba(0,200,150,0.4), 0 0 80px rgba(0,200,150,0.15);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 40px rgba(0,200,150,0.4), 0 0 80px rgba(0,200,150,0.15); }
+    50% { box-shadow: 0 0 60px rgba(0,200,150,0.6), 0 0 120px rgba(0,200,150,0.25); }
+  }
+
+  .game-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+  }
+
+  .game-subtitle {
+    font-size: 14px;
+    color: var(--sub);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .levels-section {
+    width: 100%;
+    margin-top: 36px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .section-label {
+    font-size: 12px;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .level-card {
+    background: var(--card);
+    border: 1px solid rgba(0,200,150,0.12);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .level-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,200,150,0.06), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .level-card:hover, .level-card:active {
+    border-color: rgba(0,200,150,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,200,150,0.15);
+  }
+
+  .level-card:hover::before, .level-card:active::before { opacity: 1; }
+
+  .level-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .level-icon.easy { background: rgba(0,200,150,0.15); }
+  .level-icon.medium { background: rgba(245,200,66,0.15); }
+  .level-icon.hard { background: rgba(255,77,109,0.15); }
+
+  .level-info { flex: 1; }
+  .level-name { font-weight: 700; font-size: 16px; margin-bottom: 3px; }
+  .level-desc { font-size: 12px; color: var(--sub); }
+
+  .level-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .level-badge.easy { background: rgba(0,200,150,0.15); color: var(--green); }
+  .level-badge.medium { background: rgba(245,200,66,0.15); color: var(--gold); }
+  .level-badge.hard { background: rgba(255,77,109,0.15); color: var(--red); }
+
+  .high-scores-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid rgba(123,168,201,0.2);
+    border-radius: 14px;
+    color: var(--sub);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .high-scores-btn:hover { border-color: var(--sub); color: var(--text); }
+
+  /* ====== QUIZ SCREEN ====== */
+  .quiz-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    animation: fadeDown 0.5s ease;
+  }
+
+  .back-btn {
+    width: 40px; height: 40px;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--card2); }
+
+  .quiz-meta { text-align: center; flex: 1; }
+  .quiz-level-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+    display: inline-block;
+  }
+  .quiz-progress-text { font-size: 13px; color: var(--sub); }
+
+  .score-display {
+    background: var(--card);
+    border: 1px solid rgba(0,200,150,0.2);
+    border-radius: 12px;
+    padding: 8px 14px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .score-num { font-size: 20px; font-weight: 900; color: var(--green); line-height: 1; }
+  .score-lbl { font-size: 10px; color: var(--sub); }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 8px 0 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), #00e8b0);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .timer-area {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .timer-ring {
+    width: 56px; height: 56px;
+    position: relative;
+  }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+  .timer-bg { stroke: rgba(255,255,255,0.08); }
+  .timer-fill { stroke: var(--green); transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+  .timer-text {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900;
+  }
+
+  .question-card {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid rgba(0,200,150,0.12);
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .q-category {
+    font-size: 11px;
+    color: var(--green);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .question-text {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.65;
+    color: #fff;
+  }
+
+  .options-grid {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeUp 0.4s ease 0.1s both;
+  }
+
+  .option-btn {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+  }
+
+  .option-letter {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: rgba(0,200,150,0.4);
+    background: rgba(0,200,150,0.06);
+    transform: translateX(-3px);
+  }
+
+  .option-btn.correct {
+    border-color: var(--green);
+    background: rgba(0,200,150,0.12);
+    animation: correctPop 0.4s ease;
+  }
+  .option-btn.correct .option-letter { background: var(--green); color: #fff; }
+
+  .option-btn.wrong {
+    border-color: var(--red);
+    background: rgba(255,77,109,0.1);
+    animation: shake 0.4s ease;
+  }
+  .option-btn.wrong .option-letter { background: var(--red); color: #fff; }
+
+  .option-btn.dimmed { opacity: 0.35; }
+  .option-btn:disabled { cursor: not-allowed; }
+
+  .explanation-box {
+    width: 100%;
+    background: rgba(0,200,150,0.08);
+    border: 1px solid rgba(0,200,150,0.25);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #b5dfd0;
+    margin-top: 12px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .explanation-box.show { display: block; }
+  .explanation-box strong { color: var(--green); }
+
+  .next-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 16px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,200,150,0.3);
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,200,150,0.4); }
+  .next-btn.show { display: flex; animation: fadeUp 0.3s ease; }
+
+  /* ====== RESULT SCREEN ====== */
+  .result-screen {
+    text-align: center;
+    width: 100%;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .result-icon {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    margin: 32px auto 20px;
+    animation: bounceIn 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  .result-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .result-subtitle { font-size: 14px; color: var(--sub); margin-bottom: 28px; }
+
+  .result-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat-num { font-size: 26px; font-weight: 900; }
+  .stat-lbl { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  .medals-row {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 24px;
+  }
+  .medal-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .action-btns { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    border: none; border-radius: 14px;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,200,150,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.25); }
+
+  /* ====== HIGH SCORES SCREEN ====== */
+  .hs-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0 20px;
+  }
+  .hs-title { font-size: 22px; font-weight: 900; }
+
+  .hs-empty {
+    text-align: center;
+    color: var(--sub);
+    padding: 48px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .hs-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    gap: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .hs-rank {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .hs-rank.r1 { background: rgba(245,200,66,0.2); color: var(--gold); }
+  .hs-rank.r2 { background: rgba(192,192,192,0.15); color: #bbb; }
+  .hs-rank.r3 { background: rgba(205,127,50,0.15); color: #cd7f32; }
+  .hs-rank.rn { background: rgba(255,255,255,0.06); color: var(--sub); }
+
+  .hs-info { flex: 1; }
+  .hs-level { font-size: 11px; color: var(--sub); }
+  .hs-score-val { font-size: 20px; font-weight: 900; color: var(--green); }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes correctPop { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+
+  .streak-badge {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: var(--gold);
+    color: #1a1000;
+    font-size: 16px;
+    font-weight: 900;
+    padding: 12px 24px;
+    border-radius: 100px;
+    z-index: 100;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97), opacity 0.3s;
+    opacity: 0;
+  }
+  .streak-badge.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  .confetti-dot {
+    position: fixed;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 50;
+    animation: confettiFall 1.2s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HOME -->
+  <div class="screen active" id="homeScreen">
+    <div class="logo-area">
+      <div class="pill-icon">💊</div>
+      <div class="game-title">Pharma Quiz</div>
+      <div class="game-subtitle">اختبر معلوماتك في صيدلية المجتمع</div>
+    </div>
+
+    <div class="levels-section">
+      <div class="section-label">اختر المستوى</div>
+
+      <div class="level-card" onclick="startQuiz('easy')">
+        <div class="level-icon easy">🌱</div>
+        <div class="level-info">
+          <div class="level-name">مبتدئ</div>
+          <div class="level-desc">أساسيات الصيدلية والأدوية الشائعة</div>
+        </div>
+        <div class="level-badge easy">سهل</div>
+      </div>
+
+      <div class="level-card" onclick="startQuiz('medium')">
+        <div class="level-icon medium">⚗️</div>
+        <div class="level-info">
+          <div class="level-name">متوسط</div>
+          <div class="level-desc">تفاعلات الأدوية وإرشادات المريض</div>
+        </div>
+        <div class="level-badge medium">متوسط</div>
+      </div>
+
+      <div class="level-card" onclick="startQuiz('hard')">
+        <div class="level-icon hard">🔬</div>
+        <div class="level-info">
+          <div class="level-name">متقدم</div>
+          <div class="level-desc">فارماكولوجي متقدم وإدارة الحالات</div>
+        </div>
+        <div class="level-badge hard">صعب</div>
+      </div>
+
+      <button class="high-scores-btn" onclick="showHighScores()">🏆 أعلى الدرجات</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="quizScreen">
+    <div class="quiz-header">
+      <div class="back-btn" onclick="goHome()">←</div>
+      <div class="quiz-meta">
+        <div class="quiz-level-tag" id="levelTag">سهل</div>
+        <div class="quiz-progress-text" id="progressText">سؤال 1 من 10</div>
+      </div>
+      <div class="score-display">
+        <div class="score-num" id="scoreDisplay">0</div>
+        <div class="score-lbl">نقطة</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:10%"></div>
+    </div>
+
+    <div class="timer-area">
+      <div class="timer-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="timer-bg" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+          <circle class="timer-fill" id="timerCircle" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-text" id="timerText">20</div>
+      </div>
+    </div>
+
+    <div class="question-card" id="questionCard">
+      <div class="q-category" id="qCategory">💊 أدوية عامة</div>
+      <div class="question-text" id="questionText">جار تحميل السؤال...</div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+
+    <div class="explanation-box" id="explanationBox"></div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+      التالي <span>←</span>
+    </button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen">
+    <div class="result-screen">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-subtitle" id="resultSubtitle"></div>
+
+      <div class="result-stats">
+        <div class="stat-box">
+          <div class="stat-num" id="statScore" style="color: var(--green)">0</div>
+          <div class="stat-lbl">نقطة</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statCorrect" style="color: #64d9a8">0</div>
+          <div class="stat-lbl">صح</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statWrong" style="color: var(--red)">0</div>
+          <div class="stat-lbl">غلط</div>
+        </div>
+      </div>
+
+      <div class="medals-row" id="medalsRow"></div>
+
+      <div class="action-btns">
+        <button class="btn-primary" onclick="retryQuiz()">🔄 العب مرة ثانية</button>
+        <button class="btn-secondary" onclick="goHome()">🏠 القائمة الرئيسية</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIGH SCORES -->
+  <div class="screen" id="hsScreen">
+    <div class="hs-header">
+      <div class="back-btn" onclick="goHome()">←</div>
+      <div class="hs-title">🏆 أعلى الدرجات</div>
+    </div>
+    <div id="hsList" style="width:100%"></div>
+  </div>
+
+</div>
+
+<div class="streak-badge" id="streakBadge"></div>
+
+<script>
+const QUESTIONS = {
+  easy: [
+    {
+      q: "ما هو الدور الأساسي للصيدلاني في صيدلية المجتمع؟",
+      options: ["صرف الأدوية فقط", "صرف الأدوية وتثقيف المريض ومتابعة العلاج", "بيع مستلزمات طبية فقط", "إجراء التحاليل الطبية"],
+      correct: 1,
+      cat: "💊 أساسيات",
+      exp: "دور الصيدلاني لا يقتصر على صرف الأدوية، بل يشمل تثقيف المريض، مراجعة التفاعلات الدوائية، ومتابعة الحالة الصحية."
+    },
+    {
+      q: "ما معنى OTC في الصيدلية؟",
+      options: ["Over The Counter - أدوية بدون وصفة", "Only Trusted Chemicals", "Oral Treatment Course", "Outside Treatment Center"],
+      correct: 0,
+      cat: "📋 مصطلحات",
+      exp: "OTC تعني Over The Counter، وهي الأدوية التي يمكن صرفها للمريض بدون وصفة طبية مثل المسكنات والفيتامينات."
+    },
+    {
+      q: "ما هو الدواء الأول للصداع الخفيف عند البالغين؟",
+      options: ["الأسبرين", "الباراسيتامول (الأسيتامينوفين)", "الكوديين", "المورفين"],
+      correct: 1,
+      cat: "💊 أدوية شائعة",
+      exp: "الباراسيتامول هو الخيار الأول للصداع الخفيف لأمانه العالي وقلة آثاره الجانبية مقارنة بالأدوية الأخرى."
+    },
+    {
+      q: "ما هو الاستخدام الأساسي لأدوية مضادات الهيستامين؟",
+      options: ["خفض الحرارة", "علاج الحساسية ونزلات البرد", "تسكين الألم", "خفض ضغط الدم"],
+      correct: 1,
+      cat: "💊 أدوية شائعة",
+      exp: "مضادات الهيستامين تُستخدم أساساً لعلاج الحساسية والحكة والرشح، وتعمل بحجب مستقبلات الهيستامين H1."
+    },
+    {
+      q: "متى يجب الرجوع للطبيب قبل استخدام الأسبرين؟",
+      options: ["عند وجود صداع", "عند الحمل أو مشاكل في المعدة أو اضطرابات النزيف", "عند الرغبة في خفض الحرارة", "لا يحتاج استشارة أبداً"],
+      correct: 1,
+      cat: "⚠️ تحذيرات",
+      exp: "الأسبرين يُمنع في الحمل وعند مشاكل المعدة والنزيف لأنه يثبط الصفائح الدموية ويهيّج جدار المعدة."
+    },
+    {
+      q: "ما هي درجة الحرارة المناسبة لتخزين معظم الأدوية؟",
+      options: ["أقل من 4 درجات", "بين 15-25 درجة مئوية", "أكثر من 35 درجة", "درجة حرارة الثلاجة دائماً"],
+      correct: 1,
+      cat: "🌡️ تخزين",
+      exp: "معظم الأدوية تُخزَّن في مكان بارد وجاف بين 15-25°م، بعيداً عن الضوء المباشر والرطوبة."
+    },
+    {
+      q: "ما هو المضاد الحيوي الأكثر استخداماً للتهابات الجهاز التنفسي العلوي البسيطة؟",
+      options: ["أموكسيسيلين", "المورفين", "الباراسيتامول", "الرانيتيدين"],
+      correct: 0,
+      cat: "💊 مضادات حيوية",
+      exp: "الأموكسيسيلين من البيتا لاكتام هو الخيار الأول لالتهابات الجهاز التنفسي البكتيرية لفعاليته ضد البكتيريا الشائعة."
+    },
+    {
+      q: "ما معنى مدة الصلاحية على علبة الدواء؟",
+      options: ["تاريخ التصنيع", "آخر تاريخ مضمون فيه فعالية الدواء وأمانه", "تاريخ الدخول للصيدلية", "تاريخ انتهاء الوصفة"],
+      correct: 1,
+      cat: "📋 مصطلحات",
+      exp: "مدة الصلاحية (Expiry Date) هي التاريخ الذي يضمن المصنّع حتى فيه فعالية وأمان الدواء، بعده لا يُستخدم."
+    },
+    {
+      q: "ما هو الدواء الأنسب لعلاج القرحة الهضمية؟",
+      options: ["الباراسيتامول", "مثبطات مضخة البروتون مثل أوميبرازول", "مضادات الهيستامين", "فيتامين C"],
+      correct: 1,
+      cat: "💊 الجهاز الهضمي",
+      exp: "مثبطات مضخة البروتون (PPIs) كالأوميبرازول تقلل إفراز حمض المعدة وهي الخيار الأول لعلاج القرحة الهضمية."
+    },
+    {
+      q: "ما الذي يجب إخبار المريض به عند صرف مضاد حيوي؟",
+      options: ["توقف عن الأخذ حين تتحسن", "أكمل الجرعة كاملة وفي مواعيدها", "تناول جرعة مضاعفة للشفاء أسرع", "لا حاجة لأي إرشادات"],
+      correct: 1,
+      cat: "👨‍⚕️ إرشادات المريض",
+      exp: "إكمال الكورس الكامل للمضاد الحيوي ضروري لمنع مقاومة البكتيريا، حتى لو تحسنت الأعراض مبكراً."
+    }
+  ],
+  medium: [
+    {
+      q: "ما هو التفاعل الدوائي الخطير بين الوارفارين وحمض الأسيتيل ساليسيليك (أسبرين)؟",
+      options: ["لا يوجد تفاعل", "زيادة خطر النزيف بشكل كبير", "تقليل فعالية الوارفارين", "ارتفاع ضغط الدم"],
+      correct: 1,
+      cat: "⚠️ تفاعلات دوائية",
+      exp: "الأسبرين والوارفارين كلاهما يزيدان خطر النزيف - الأول يثبط الصفائح والثاني يثبط عوامل التخثر، مما يجعل الجمع بينهما خطيراً."
+    },
+    {
+      q: "ما هو تعريف compliance في صيدلية المجتمع؟",
+      options: ["تقييد وصول الدواء", "مدى التزام المريض بنظام العلاج المقرر", "ترخيص الصيدلية", "جرعة الدواء"],
+      correct: 1,
+      cat: "📋 مصطلحات",
+      exp: "Medication Compliance أو Adherence تعني مدى التزام المريض بتناول الدواء بالجرعة والوقت والمدة الصحيحة كما وُصف له."
+    },
+    {
+      q: "مريض يأخذ Metformin - ماذا يجب تحذيره؟",
+      options: ["تجنب الفواكه", "إيقافه قبل أي إجراء يستخدم صبغة التباين بيوم أو يومين", "لا تأكل لحوم", "تجنب الماء الثلج"],
+      correct: 1,
+      cat: "💊 السكري",
+      exp: "الميتفورمين مع صبغة التباين اليودية يزيد خطر الحماض اللاكتيكي، لذا يوقف قبل 48 ساعة من الإجراء ويُعاد بعد التأكد من وظائف الكلى."
+    },
+    {
+      q: "ما هو الفرق بين Generic و Brand Name drug؟",
+      options: ["لا فرق على الإطلاق", "Generic نفس المادة الفعالة لكن أرخص، Brand اسم تجاري بنفس الفعالية", "Generic أقل فعالية دائماً", "Brand أأمن دائماً"],
+      correct: 1,
+      cat: "💊 أساسيات",
+      exp: "الدواء الجنيسي (Generic) يحتوي على نفس المادة الفعالة والجرعة والشكل الصيدلاني وبنفس الفعالية، لكن بسعر أقل."
+    },
+    {
+      q: "ما هي المعلومات الضرورية التي يجب جمعها قبل نصح المريض بدواء OTC؟",
+      options: ["العمر فقط", "طبيعة الأعراض، المدة، الأدوية الحالية، الحمل، الأمراض المزمنة", "الاسم والعنوان", "نوع التأمين الصحي"],
+      correct: 1,
+      cat: "👨‍⚕️ تقييم المريض",
+      exp: "قبل توصية OTC يجب تقييم: الأعراض ومدتها، الأدوية الحالية (تفاعلات)، الحمل والإرضاع، الأمراض المزمنة، والعمر."
+    },
+    {
+      q: "ما أعراض نقص البوتاسيوم (Hypokalemia) عند مريض يأخذ مدرات البول؟",
+      options: ["ارتفاع ضغط الدم", "ضعف عضلي، تعب، اضطراب في نبضات القلب", "احمرار الجلد", "ارتفاع السكر"],
+      correct: 1,
+      cat: "⚠️ مضاعفات",
+      exp: "مدرات البول من مجموعة Thiazides و Loop Diuretics تسبب فقدان البوتاسيوم مما يؤدي لضعف عضلي وعدم انتظام ضربات القلب."
+    },
+    {
+      q: "متى يُستخدم Oral Rehydration Solution (ORS) في الإسهال؟",
+      options: ["فقط عند الكبار", "لاستعاضة السوائل والأملاح المفقودة في جميع الأعمار", "كمضاد حيوي", "لوقف الإسهال فوراً"],
+      correct: 1,
+      cat: "💊 الجهاز الهضمي",
+      exp: "ORS محلول إماهة فموي يستعيض السوائل والشوارد المفقودة في الإسهال، وهو العلاج الأساسي للجفاف الخفيف والمتوسط في كل الأعمار."
+    },
+    {
+      q: "ما هو مبدأ 'Five Rights' في صرف الدواء؟",
+      options: ["5 أيام علاج", "المريض الصحيح، الدواء الصحيح، الجرعة الصحيحة، الوقت الصحيح، الطريق الصحيح", "5 أنواع أدوية", "5 توقيعات"],
+      correct: 1,
+      cat: "✅ معايير الجودة",
+      exp: "قاعدة الـ5 صح أساس سلامة الدواء: المريض الصحيح، الدواء الصحيح، الجرعة الصحيحة، الوقت الصحيح، والطريق الصحيح."
+    },
+    {
+      q: "ما التوصية للحامل التي تعاني من صداع خفيف؟",
+      options: ["إبروفين", "باراسيتامول بعد استشارة الطبيب", "أسبرين", "كودين"],
+      correct: 1,
+      cat: "👶 الحمل والأدوية",
+      exp: "الباراسيتامول هو الأكثر أماناً في الحمل للألم الخفيف، لكن دائماً مع استشارة الطبيب. الأسبرين والإبروفين يُتجنبان خاصة في الثلث الثالث."
+    },
+    {
+      q: "ما هي أعراض نقص فيتامين D؟",
+      options: ["احمرار الجلد والشفاه", "آلام العظام والعضلات، تعب عام، ضعف مناعي", "ارتفاع ضغط الدم", "زيادة الوزن المفاجئة"],
+      correct: 1,
+      cat: "💊 الفيتامينات",
+      exp: "نقص فيتامين D يسبب آلام عظام وعضلات وضعف عام وضعف مناعي. الشمس والأطعمة الغنية به والمكملات تساعد في العلاج."
+    }
+  ],
+  hard: [
+    {
+      q: "ما هي آلية عمل مثبطات ACE في علاج ارتفاع ضغط الدم؟",
+      options: ["تثبيط قنوات الكالسيوم", "تثبيط إنزيم المحول للأنجيوتنسين مما يقلل توليد أنجيوتنسين II ويُوسّع الأوعية", "تثبيط مضخة الصوديوم", "تنشيط مستقبلات البيتا"],
+      correct: 1,
+      cat: "🔬 فارماكولوجي",
+      exp: "ACE Inhibitors تثبط إنزيم ACE فتمنع تحويل أنجيوتنسين I إلى أنجيوتنسين II، مما يوسع الأوعية ويقلل الألدوستيرون ويخفض ضغط الدم."
+    },
+    {
+      q: "ما الفرق بين Pharmacokinetics و Pharmacodynamics؟",
+      options: ["لا فرق", "Pharmacokinetics = تأثير الجسم على الدواء (ADME)، Pharmacodynamics = تأثير الدواء على الجسم", "Pharmacokinetics دراسة الجرعات فقط", "Pharmacodynamics دراسة المصادر الدوائية"],
+      correct: 1,
+      cat: "🔬 فارماكولوجي",
+      exp: "PK: ما الجسم يفعله للدواء (Absorption, Distribution, Metabolism, Excretion). PD: ما الدواء يفعله للجسم (الآلية والتأثير)."
+    },
+    {
+      q: "مريض يأخذ Phenytoin - ما التفاعل مع Fluconazole؟",
+      options: ["لا تفاعل", "Fluconazole يثبط CYP2C9 فيرفع مستوى Phenytoin وخطر التسمم", "Fluconazole يخفض Phenytoin بشكل حاد", "يزيد امتصاص الفينيتوين فقط"],
+      correct: 1,
+      cat: "⚠️ تفاعلات دوائية",
+      exp: "Fluconazole مثبط قوي لـ CYP2C9 (الإنزيم المسؤول عن استقلاب Phenytoin)، مما يرفع تركيزه في الدم ويزيد خطر التسمم العصبي."
+    },
+    {
+      q: "ما هو مفهوم Narrow Therapeutic Index (NTI) وأمثلة عليه؟",
+      options: ["أدوية لا تحتاج مراقبة", "أدوية الفرق بين جرعتها العلاجية والسامة صغير جداً مثل الوارفارين والليثيوم والديجوكسين", "أدوية رخيصة", "أدوية OTC فقط"],
+      correct: 1,
+      cat: "🔬 فارماكولوجي",
+      exp: "NTI drugs لها هامش أمان ضيق جداً، تحتاج مراقبة دقيقة للتركيز في الدم. أمثلة: Warfarin, Lithium, Digoxin, Theophylline, Phenytoin."
+    },
+    {
+      q: "ما الآلية الدقيقة لعمل Omeprazole؟",
+      options: ["يحيّد حمض المعدة مباشرة", "يثبط H+/K+-ATPase (مضخة البروتون) بشكل لا رجعي في الخلايا الجدارية", "يثبط مستقبلات H2", "يزيد إفراز البيكربونات"],
+      correct: 1,
+      cat: "🔬 فارماكولوجي",
+      exp: "Omeprazole PPI يرتبط بشكل لا رجعي بالمضخة البروتونية H+/K+-ATPase في الخلايا الجدارية للمعدة، مما يوقف إفراز حمض المعدة بشكل فعال."
+    },
+    {
+      q: "ما الإجراء المناسب عند اكتشاف خطأ في الوصفة الطبية؟",
+      options: ["صرفها كما هي وإخبار المريض لاحقاً", "التواصل مع الطبيب فوراً، توثيق الخطأ، وإيقاف الصرف حتى الحل", "تغيير الجرعة بدون إخبار الطبيب", "إلغاء الوصفة بشكل كامل بدون توثيق"],
+      correct: 1,
+      cat: "✅ سلامة الدواء",
+      exp: "عند اكتشاف خطأ: أوقف الصرف، اتصل بالطبيب الكاتب، وثّق الخطأ في سجلات الصيدلية، وأبلغ المريض بالتأخير بدون إثارة قلق."
+    },
+    {
+      q: "ما هو Medication Reconciliation وأين يُطبق؟",
+      options: ["حساب سعر الأدوية", "مراجعة وتوثيق قائمة أدوية المريض الكاملة عند نقاط التحويل في الرعاية الصحية", "إعادة صياغة الوصفة", "تحديث قاعدة بيانات الأدوية"],
+      correct: 1,
+      cat: "✅ سلامة الدواء",
+      exp: "Medication Reconciliation هي مقارنة قائمة أدوية المريض الحالية مع الأدوية الموصوفة له في نقاط الدخول/خروج من المستشفى لتفادي التكرار والتفاعلات."
+    },
+    {
+      q: "ما هو مفهوم 'Pharmaceutical Care' الذي طوره Hepler وStrand؟",
+      options: ["بيع الأدوية بأسعار مناسبة", "الرعاية الصيدلانية: تحمّل الصيدلاني مسؤولية نتائج علاج المريض بهدف تحسين جودة حياته", "تعليم الصيدلانيين فقط", "إدارة مخزون الصيدلية"],
+      correct: 1,
+      cat: "📚 تاريخ الصيدلة",
+      exp: "Pharmaceutical Care (1990) مفهوم ثوري: الصيدلاني يتحمل مسؤولية مخرجات العلاج لكل مريض لتحسين جودة حياته، ليس فقط صرف الدواء."
+    },
+    {
+      q: "مريضة حامل في الثلث الأول - ما تصنيف FDA المقبول للأدوية؟",
+      options: ["الفئة X فقط", "الفئة A وB بحذر، تجنب C وD وX", "جميع الأدوية مقبولة", "الفئة D مقبولة دائماً"],
+      correct: 1,
+      cat: "👶 الحمل والأدوية",
+      exp: "تصنيف FDA: A (آمن)، B (لا أذى على الحيوانات)، C (يُستخدم إذا الفائدة > الخطر)، D (دليل على خطر)، X (محظور). في الثلث الأول A وB الأكثر أماناً."
+    },
+    {
+      q: "ما الفرق بين Adverse Drug Reaction (ADR) و Side Effect؟",
+      options: ["نفس الشيء تماماً", "ADR أي تأثير ضار غير مقصود بجرعة طبيعية، Side Effect تأثير غير مقصود يمكن توقعه ضمن التأثيرات الفارماكولوجية", "ADR خاص بالحساسية فقط", "Side Effect أكثر خطورة دائماً"],
+      correct: 1,
+      cat: "⚠️ سلامة الدواء",
+      exp: "ADR: أي استجابة ضارة وغير مقصودة بجرعة طبيعية (يشمل Side Effects والتفاعلات الخطرة). Side Effect: تأثير غير مقصود لكن متوقع فارماكولوجياً كنعاس مضادات الهيستامين."
+    }
+  ]
+};
+
+let currentLevel = 'easy';
+let currentQ = 0;
+let score = 0;
+let correct = 0;
+let wrong = 0;
+let questions = [];
+let timerVal = 20;
+let timerInterval = null;
+let answered = false;
+let streakCount = 0;
+const CIRCUMFERENCE = 150.8;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  clearInterval(timerInterval);
+  showScreen('homeScreen');
+}
+
+function startQuiz(level) {
+  currentLevel = level;
+  questions = shuffle([...QUESTIONS[level]]);
+  currentQ = 0; score = 0; correct = 0; wrong = 0; streakCount = 0;
+  showScreen('quizScreen');
+  setupLevelUI();
+  loadQuestion();
+}
+
+function retryQuiz() { startQuiz(currentLevel); }
+
+function setupLevelUI() {
+  const tag = document.getElementById('levelTag');
+  const labels = { easy: 'سهل', medium: 'متوسط', hard: 'صعب' };
+  const colors = { easy: 'rgba(0,200,150,0.15)', medium: 'rgba(245,200,66,0.15)', hard: 'rgba(255,77,109,0.15)' };
+  const textColors = { easy: 'var(--green)', medium: 'var(--gold)', hard: 'var(--red)' };
+  tag.textContent = labels[currentLevel];
+  tag.style.background = colors[currentLevel];
+  tag.style.color = textColors[currentLevel];
+}
+
+function loadQuestion() {
+  answered = false;
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  document.getElementById('progressText').textContent = `سؤال ${currentQ + 1} من ${total}`;
+  document.getElementById('progressBar').style.width = `${((currentQ + 1) / total) * 100}%`;
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('questionText').textContent = q.q;
+
+  const letters = ['أ', 'ب', 'ج', 'د'];
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i, q.correct, q.exp);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('explanationBox').classList.remove('show');
+  document.getElementById('explanationBox').innerHTML = '';
+  document.getElementById('nextBtn').classList.remove('show');
+
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerVal = 20;
+  const timeForLevel = { easy: 20, medium: 25, hard: 30 };
+  timerVal = timeForLevel[currentLevel];
+  updateTimer();
+
+  timerInterval = setInterval(() => {
+    timerVal--;
+    updateTimer();
+    if (timerVal <= 0) {
+      clearInterval(timerInterval);
+      if (!answered) timeUp();
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  document.getElementById('timerText').textContent = timerVal;
+  const pct = timerVal / (currentLevel === 'easy' ? 20 : currentLevel === 'medium' ? 25 : 30);
+  const offset = CIRCUMFERENCE * (1 - pct);
+  document.getElementById('timerCircle').style.strokeDashoffset = offset;
+
+  const color = pct > 0.5 ? 'var(--green)' : pct > 0.25 ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('timerCircle').style.stroke = color;
+  document.getElementById('timerText').style.color = color;
+}
+
+function timeUp() {
+  answered = true;
+  streakCount = 0;
+  wrong++;
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    else b.classList.add('dimmed');
+  });
+  showExplanation(q.exp, false);
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function selectAnswer(idx, correct_idx, exp) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (idx === correct_idx) {
+    btns[idx].classList.add('correct');
+    const pts = currentLevel === 'easy' ? 10 : currentLevel === 'medium' ? 20 : 30;
+    const bonus = Math.floor(timerVal * 0.5);
+    score += pts + bonus;
+    correct++;
+    streakCount++;
+    document.getElementById('scoreDisplay').textContent = score;
+    if (streakCount >= 3) showStreak(streakCount);
+    spawnConfetti();
+    showExplanation(exp, true);
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[correct_idx].classList.add('correct');
+    btns.forEach((b, i) => { if (i !== idx && i !== correct_idx) b.classList.add('dimmed'); });
+    wrong++;
+    streakCount = 0;
+    showExplanation(exp, false);
+  }
+
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function showExplanation(exp, isCorrect) {
+  const box = document.getElementById('explanationBox');
+  box.innerHTML = `<strong>${isCorrect ? '✅ صح!' : '❌ خطأ!'}</strong> ${exp}`;
+  box.classList.add('show');
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResult() {
+  const pct = correct / questions.length;
+  let icon, title, subtitle;
+
+  if (pct >= 0.9) { icon = '🏆'; title = 'ممتاز! صيدلاني محترف'; subtitle = 'أداء رائع! أنت تعرف الصيدلية بعمق'; }
+  else if (pct >= 0.7) { icon = '🌟'; title = 'جيد جداً!'; subtitle = 'معلوماتك قوية، استمر في التعلم'; }
+  else if (pct >= 0.5) { icon = '👍'; title = 'جيد!'; subtitle = 'نتيجة لا بأس بها، ذاكر أكثر'; }
+  else { icon = '📚'; title = 'تحتاج مذاكرة'; subtitle = 'لا تيأس! جرب مرة ثانية'; }
+
+  document.getElementById('resultIcon').textContent = icon;
+  document.getElementById('resultIcon').style.background = pct >= 0.7 ? 'rgba(0,200,150,0.15)' : pct >= 0.5 ? 'rgba(245,200,66,0.15)' : 'rgba(255,77,109,0.1)';
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSubtitle').textContent = subtitle;
+  document.getElementById('statScore').textContent = score;
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = wrong;
+
+  const medals = [];
+  if (pct === 1) medals.push({ txt: '🎯 Perfect Score', color: 'rgba(245,200,66,0.15)', tc: 'var(--gold)' });
+  if (streakCount >= 3) medals.push({ txt: `🔥 ${streakCount}x Streak`, color: 'rgba(255,100,50,0.15)', tc: '#ff6432' });
+  if (score > 200) medals.push({ txt: '⚡ نقطة ممتازة', color: 'rgba(0,200,150,0.15)', tc: 'var(--green)' });
+
+  const mRow = document.getElementById('medalsRow');
+  mRow.innerHTML = medals.map(m => `<div class="medal-chip" style="background:${m.color};color:${m.tc}">${m.txt}</div>`).join('');
+
+  saveScore(score, currentLevel);
+  showScreen('resultScreen');
+}
+
+function showHighScores() {
+  const scores = getScores();
+  const list = document.getElementById('hsList');
+  const rankClasses = ['r1', 'r2', 'r3'];
+  const trophies = ['🥇', '🥈', '🥉'];
+  const lvlLabels = { easy: 'سهل', medium: 'متوسط', hard: 'صعب' };
+
+  if (scores.length === 0) {
+    list.innerHTML = `<div class="hs-empty">🎮 لم تلعب بعد!<br>ابدأ لعبة وسجّل نتيجتك.</div>`;
+  } else {
+    list.innerHTML = scores.slice(0, 10).map((s, i) => `
+      <div class="hs-row">
+        <div class="hs-rank ${rankClasses[i] || 'rn'}">${trophies[i] || i + 1}</div>
+        <div class="hs-info">
+          <div class="hs-level">مستوى ${lvlLabels[s.level]}</div>
+        </div>
+        <div class="hs-score-val">${s.score}</div>
+      </div>
+    `).join('');
+  }
+  showScreen('hsScreen');
+}
+
+function saveScore(s, level) {
+  const scores = getScores();
+  scores.push({ score: s, level, date: Date.now() });
+  scores.sort((a, b) => b.score - a.score);
+  try { localStorage.setItem('pharmaScores', JSON.stringify(scores.slice(0, 20))); } catch(e){}
+}
+
+function getScores() {
+  try { return JSON.parse(localStorage.getItem('pharmaScores') || '[]'); } catch(e) { return []; }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function showStreak(n) {
+  const b = document.getElementById('streakBadge');
+  b.textContent = `🔥 ${n}x Streak!`;
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 1500);
+}
+
+function spawnConfetti() {
+  const colors = ['#00c896', '#f5c842', '#ff4d6d', '#60a5fa', '#a78bfa'];
+  for (let i = 0; i < 16; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'confetti-dot';
+    dot.style.cssText = `
+      left: ${20 + Math.random() * 60}%;
+      top: ${Math.random() * 30}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      animation-delay: ${Math.random() * 0.4}s;
+      animation-duration: ${0.8 + Math.random() * 0.8}s;
+    `;
+    document.body.appendChild(dot);
+    setTimeout(() => dot.remove(), 1600);
+  }
+}
+</script>
+</body>
+</html>
